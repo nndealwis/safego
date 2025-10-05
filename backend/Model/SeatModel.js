@@ -8,6 +8,11 @@ const seatSchema = new mongoose.Schema({
     enum: ["Available", "Pending", "Booked"],
     default: "Available",
   },
+  reservedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Student",
+    required: false
+  },
 });
 
 // Ensure unique seat per bus

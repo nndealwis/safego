@@ -1,9 +1,17 @@
 const Seat = require("../Model/SeatModel");
+const Bus = require("../Model/BusModel");
 
 // POST /api/seats -> create one seat
 const createSeat = async (req, res) => {
   try {
     const { seatNumber, busID, status } = req.body;
+    
+    // Validate bus exists
+    const bus = await Bus.findOne({ busID, isActive: true });
+    if (!bus) {
+      return res.status(400).json({ error: "Bus not found or inactive" });
+    }
+    
     const seat = new Seat({
       seatNumber,
       busID,
@@ -33,14 +41,18 @@ const getSeatsByBus = async (req, res) => {
 // POST /api/seats/generate  → bulk create seats (1..totalSeats), no driver seat
 const generateSeatsForBus = async (req, res) => {
   try {
-    const { busID, totalSeats = 28 } = req.body;
+    const { busID, totalSeats } = req.body;
+
+    // For testing: allow generating seats even if bus doesn't exist in Bus collection
+    // In production, you'd want to validate bus existence
+    const seatsToGenerate = totalSeats || 28; // default to 28 seats
 
     const existing = await Seat.countDocuments({ busID });
     if (existing > 0) {
       return res.status(400).json({ message: `Seats already exist for bus ${busID}.` });
     }
 
-    const seats = Array.from({ length: totalSeats }, (_, i) => ({
+    const seats = Array.from({ length: seatsToGenerate }, (_, i) => ({
       seatNumber: i + 1,
       busID,
       status: "Available",
@@ -49,6 +61,10 @@ const generateSeatsForBus = async (req, res) => {
     const created = await Seat.insertMany(seats);
     res.status(201).json({
       message: `${created.length} seats created for bus ${busID}`,
+      busInfo: {
+        busID: busID,
+        totalSeats: seatsToGenerate
+      },
       createdSeats: created,
     });
   } catch (err) {
