@@ -18,10 +18,19 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://nimeshalwis13_db_user:fXG5lTvOJDUgrUkm@safego.u8riemt.mongodb.net/schoolbus")
+
+
+if (!process.env.MONGODB_URI) {
+    console.error("Missing MONGODB_URI. Copy backend/.env.example to backend/.env and fill it in.");
+    process.exit(1);
+}
+
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log("Connected to MongoDB"))
-.catch((err) => console.error("MongoDB connection error:", err));
+.catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1);
+});
 
 // Routes
 app.use("/api/seats", seatRoutes);

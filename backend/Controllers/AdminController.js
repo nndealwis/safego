@@ -2,7 +2,10 @@ const Admin = require("../Model/AdminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET || "safego-admin-secret-key-2025";
+if (!process.env.JWT_SECRET) {
+  throw new Error("Missing JWT_SECRET. Copy backend/.env.example to backend/.env and fill it in.");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // REGISTER NEW ADMIN
 const registerAdmin = async (req, res) => {

@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../Model/AdminModel");
 
-const JWT_SECRET = process.env.JWT_SECRET || "safego-admin-secret-key-2025";
+if (!process.env.JWT_SECRET) {
+  throw new Error("Missing JWT_SECRET. Copy backend/.env.example to backend/.env and fill it in.");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Verify JWT token
 const authenticateAdmin = async (req, res, next) => {
